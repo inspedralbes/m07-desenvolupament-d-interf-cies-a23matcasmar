@@ -1,29 +1,24 @@
-name: Node CI
+name: Deploy HTML Files
 
 on: [push]
 
 jobs:
-  build:
-
+  deploy:
     runs-on: ubuntu-latest
 
     steps:
     - uses: actions/checkout@v3
-    - name: Install Node.js
-      uses: actions/setup-node@v3
+    
+    - name: List files (debug)
+      run: ls -la
+    
+    - name: Deploy HTML to Server
+      uses: easingthemes/ssh-deploy@v2.2.11
       with:
-        node-version: '16.x'
-    - name: Install npm dependencies
-      run: npm install
-    - name: Run build task
-      run: npm run build --if-present
-    - name: Deploy to Server
-      uses: easingthemes/ssh-deploy@main
-      with:
-          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-          ARGS: "-rlgoDzvc -i --delete"
-          SOURCE: "dist/"
-          REMOTE_HOST: ${{ secrets.SSH_HOST }}
-          REMOTE_USER: ${{ secrets.SSH_USERNAME }}
-          TARGET: ${{ secrets.SSH_TARGET }}
-          EXCLUDE: "/dist/, /node_modules/" 
+        SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+        REMOTE_HOST: ${{ secrets.SSH_HOST }}
+        REMOTE_USER: ${{ secrets.SSH_USERNAME }}
+        TARGET: ${{ secrets.SSH_TARGET }}
+        SOURCE: "./"                      # Copia todo el repositorio
+        ARGS: "-rlgoDzvc --delete"
+        EXCLUDE: "node_modules/, cypress/, .github/, doc/, .gitignore, cypress.config.js, package*.json, README.md"
